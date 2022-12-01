@@ -6,7 +6,7 @@ A double layer fully connected neural network model to estimate evacuation time 
 
 or
 
-- Directly install the dependencies:
+- Directly install dependencies:
 ```
 pip install -r requirements.txt
 ```
