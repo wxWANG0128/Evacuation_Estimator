@@ -1,0 +1,5 @@
+xlrd
+torch
+numpy
+matplotlib
+scikit-learn
