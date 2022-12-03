@@ -83,7 +83,7 @@ def net(X, w1, b1, w2, b2, a):
 
 ##LOSS_FUNCTION
 def squared_loss(y_hat, y): 
-    return (y_hat - y.view(y_hat.size())) ** 2 / 2 
+    return (y_hat - y.view(y_hat.size())) ** 2
 
 ##OPTIMIZE_FUNCTION
 def sgd(params, lr, batch_size):
@@ -92,9 +92,8 @@ def sgd(params, lr, batch_size):
 
 ##HYPER_PARAMETERS
 lr = 0.008
-#net = MODEL_DOUBLE_LAYER
 loss = squared_loss
-extra_epochs = 10
+extra_epochs = 50
 batch_size = 20
 
 ##INITIAL_PARAMETERS
