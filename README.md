@@ -1,5 +1,5 @@
 # Evacuation_Estimator
-A double layer fully connected neural network model to estimate evacuation time of underground stations.
+A double layer fully connected neural network model to estimate evacuation time for underground stations.
 
 ## Requirements
 - See `requirements.txt`
