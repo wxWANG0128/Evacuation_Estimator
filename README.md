@@ -3,7 +3,7 @@ A double layer fully connected neural network model to estimate evacuation time 
 
 Use main branch for time estimate.
 
-Use correlation branche to investigate the correlation between elements and evcaution time.
+Use correlation branch to investigate the correlation between elements and evcaution time.
 
 ## Requirements
 - See `requirements.txt`
