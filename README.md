@@ -5,6 +5,9 @@ Use main branch for time estimate.
 
 Use correlation branch to investigate the correlation between elements and evcaution time.
 
+You can access to the project report for details:
+- See `Project_Report.pdf`
+
 ## Requirements
 - See `requirements.txt`
 
