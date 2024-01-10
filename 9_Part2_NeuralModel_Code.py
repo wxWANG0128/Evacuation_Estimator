@@ -1,10 +1,14 @@
 import xlrd  
 import torch
-import numpy as np 
+import time
+import numpy as np
+import torch.nn as nn
+import torch.optim as optim
 import random  
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
+from model import LinearNET, NeuralNET
 
 ##DATASET_PATH
 file_path = 'train_2.0.xls' #modify your file path here
@@ -43,8 +47,9 @@ preprocess = StandardScaler()
 x = preprocess.fit_transform(x)
 x = x.T
 ##DATASET_SPLIT
-random_state = random.randint(0,1000)
-x_train, x_test, y_train, y_test = train_test_split(x, y, test_size = 0.1, shuffle = 'true', random_state = 750)
+#random_state = random.randint(0,1000)
+random_state = 750
+x_train, x_test, y_train, y_test = train_test_split(x, y, test_size = 0.1, shuffle = True, random_state = random_state)
 #random_state = 750 to obtain the result in report. You can use random_state = random_state if you want.
 
 ##DATASET.TO_TENSOR
@@ -54,10 +59,10 @@ x_train_tensor = torch.from_numpy(x_train)
 y_train_tensor = torch.from_numpy(y_train)
 
 ##DATASET.TO_DEVICE
-test_features = x_test_tensor.to(device, torch.float32)
-test_labels = y_test_tensor.to(device, torch.float32)
-train_features = x_train_tensor.to(device, torch.float32)
-train_labels = y_train_tensor.to(device, torch.float32)
+test_features = x_test_tensor.to(device, torch.float64)
+test_labels = y_test_tensor.to(device, torch.float64)
+train_features = x_train_tensor.to(device, torch.float64)
+train_labels = y_train_tensor.to(device, torch.float64)
 
 ##FEATURES_NUM
 num_inputs = 6
@@ -72,30 +77,38 @@ def data_iter(batch_size, train_features, train_labels):
         j = j.to(device)
         yield  train_features.index_select(0, j), train_labels.index_select(0, j)
 
-##PARAMETER_INITIALIZATION
-w1 = torch.tensor(np.random.normal(0, 0.01, (num_inputs, num_inputs)), dtype = torch.float32, requires_grad = True, device = device)
-w2 = torch.tensor(np.random.normal(0, 0.01, (num_inputs, 1)), dtype = torch.float32, requires_grad = True, device = device)
-b1 = torch.zeros(1, num_inputs, dtype = torch.float32, requires_grad = True, device = device)
-b2 = torch.zeros(1, dtype = torch.float32, requires_grad = True, device = device)
+'''
+##PARAMETER_INITIALIZATION_VINTAGE
+w1 = torch.tensor(np.random.normal(0, 0.01, (num_inputs, num_inputs)), dtype = torch.float64, requires_grad = True, device = device)
+w2 = torch.tensor(np.random.normal(0, 0.01, (num_inputs, 1)), dtype = torch.float64, requires_grad = True, device = device)
+b1 = torch.zeros(1, num_inputs, dtype = torch.float64, requires_grad = True, device = device)
+b2 = torch.zeros(1, dtype = torch.float64, requires_grad = True, device = device)
 
-##MODEL_DEFINE
+##MODEL_DEFINE_VINTAGE
 def MODEL_ONE_LAYER(X, w1, b1, w2, b2):
     return torch.mm(torch.relu(torch.mm((X), w1) + b1), w2) + b2
 ##LOSS_FUNCTION
 def squared_loss(y_hat, y): 
     return (y_hat - y.view(y_hat.size())) ** 2
 
-##OPTIMIZE_FUNCTION
+##OPTIMIZE_FUNCTION_VINTAGE
 def sgd(params, lr, batch_size): 
     for param in params:
-        param.data -= lr * param.grad / batch_size 
+        param.data -= lr * param.grad / batch_size
+'''
 
-##HYPER_PARAMETERS
-lr = 0.000001
-net = MODEL_ONE_LAYER
-loss = squared_loss
+
+lr = 0.0001
+#net = LinearNET()
+net = NeuralNET()
+net.initialize_weights()
+
+lsf = nn.L1Loss()
 extra_epochs = 50
 batch_size = 30
+
+optimizer = optim.SGD(net.parameters(), lr=lr, momentum=0.9)
+scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.1)
 
 ##INITIAL_PARAMETERS
 cont = 0
@@ -105,25 +118,27 @@ num_epochs = 5000
 train_l_list = []
 test_valid_list = []
 #TRAIN
+start_t = time.time()
+
 for epoch in range(num_epochs):
     for X, y in data_iter(batch_size, train_features, train_labels):
-        l = loss(net(X, w1, b1, w2, b2), y).sum()
-        l.backward()  #BACK_PROBAGATION
-        sgd([w1, b1, w2, b2], lr, batch_size)  
+        #forward
+        outputs = net(X)
 
-        ##GRADIENT_CLAER
-        w1.grad.data.zero_()
-        b1.grad.data.zero_()
-        w2.grad.data.zero_()
-        b2.grad.data.zero_()
+        #backward
+        optimizer.zero_grad()
+        loss = lsf(outputs, y)
+        loss.backward()
 
+        # update weights
+        optimizer.step()
 
-    test_l = loss(net(test_features, w1, b1, w2, b2), test_labels)
-    train_l = loss(net(train_features, w1, b1, w2, b2), train_labels)
+    test_l = lsf(net(test_features),test_labels)
+    train_l = lsf(net(train_features), train_labels)
     train_l_list.append(train_l.mean().item())
     test_valid_list.append(test_l.mean().item())
     print('epoch %d, loss %f' % (epoch + 1, test_l.mean().item()))
-    if abs(l-pre_loss) <= 0.00005:
+    if abs(loss-pre_loss) <= 0.00005:
         cont += 1
     else:
         cont = 0
@@ -131,9 +146,13 @@ for epoch in range(num_epochs):
     if cont == extra_epochs:
         break
     else:
-        pre_loss = l
+        pre_loss = loss
+
+
+end_t = time.time()
 
 print('completed_on:', device)
+print('Total time for training:', end_t-start_t)
 print('Train_Data_length:', len(train_features))
 print('random state number:', random_state)
 
