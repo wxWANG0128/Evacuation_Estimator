@@ -26,9 +26,11 @@ class NeuralNET(nn.Module):
     def __init__(self):
         super(NeuralNET, self).__init__()
         self.features = nn.Sequential(
-            nn.Linear(6, 6,bias=True,dtype=torch.float64),
+            nn.Linear(6, 10, bias=True, dtype=torch.float64),
             nn.ReLU(),
-            nn.Linear(6,1,bias=True,dtype=torch.float64)
+            nn.Linear(10, 10, bias=True, dtype=torch.float64),
+            nn.ReLU(),
+            nn.Linear(10, 1, bias=True, dtype=torch.float64)
         )
 
     def forward(self, x):

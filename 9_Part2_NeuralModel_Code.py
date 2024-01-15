@@ -11,7 +11,7 @@ from sklearn.preprocessing import StandardScaler
 from model import LinearNET, NeuralNET
 
 ##DATASET_PATH
-file_path = 'train_2.0.xls' #modify your file path here
+file_path = 'train_3.0.xls' #modify your file path here
 
 ##CUDA&MPS_AVAILABLE_CHECK
 def get_device():
@@ -47,8 +47,8 @@ preprocess = StandardScaler()
 x = preprocess.fit_transform(x)
 x = x.T
 ##DATASET_SPLIT
-#random_state = random.randint(0,1000)
-random_state = 750
+random_state = random.randint(0,1000)
+#random_state = 750
 x_train, x_test, y_train, y_test = train_test_split(x, y, test_size = 0.1, shuffle = True, random_state = random_state)
 #random_state = 750 to obtain the result in report. You can use random_state = random_state if you want.
 
@@ -147,7 +147,7 @@ for epoch in range(num_epochs):
         break
     else:
         pre_loss = loss
-
+    torch.save(net.state_dict(), "test.pth")
 
 end_t = time.time()
 
@@ -167,7 +167,7 @@ lns2 = ax2.plot(x1,y2,'silver',label = 'Validation')
 
 ax1.set_xlabel('Epoches')
 plt.title('Loss & Validation vs. Epoches')
-ax2.set_ylabel('MSE')
+ax2.set_ylabel('MAE')
 
 lns = lns1 + lns2
 lab = [l.get_label() for l in lns]
